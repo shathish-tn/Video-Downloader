@@ -31,15 +31,12 @@ app.post('/api/get-video', async (req, res) => {
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
         const videoData = await page.evaluate(() => {
-            // முயற்சி 1: <video> tag
             const videoElement = document.querySelector('video source');
             if (videoElement) return { type: 'video', url: videoElement.src };
             
-            // முயற்சி 2: .mp4 link
             const mp4Link = document.querySelector('a[href*=".mp4"]');
             if (mp4Link) return { type: 'link', url: mp4Link.href };
 
-            // முயற்சி 3: download button
             const downloadBtn = document.querySelector('a[download]');
             if (downloadBtn) return { type: 'link', url: downloadBtn.href };
 
@@ -64,6 +61,7 @@ app.post('/api/get-video', async (req, res) => {
     }
 });
 
+// Render-ன் dynamic port-ஐ பயன்படுத்த இது அவசியம்
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
