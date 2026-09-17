@@ -1,47 +1,41 @@
-const express = require('express');
-const puppeteer = require('puppeteer');
-const cors = require('cors');
+async function fetchVideo() {
+    const url = document.getElementById('videoUrl').value.trim();
+    const resultDiv = document.getElementById('result');
+    const btn = document.getElementById('fetchBtn');
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+    if (!url) {
+        resultDiv.innerHTML = "<p style='color:red;'>தயவுசெய்து ஒரு valid லிங்க்கை உள்ளிடவும்.</p>";
+        return;
+    }
 
-app.post('/api/get-video', async (req, res) => {
-    const { url } = req.body;
+    btn.disabled = true;
+    btn.innerText = "Processing... காத்திருக்கவும்";
+    resultDiv.innerHTML = "";
 
     try {
-        // Headless browser-ஐ திறக்கவும்
-        const browser = await puppeteer.launch({ headless: "new" });
-        const page = await browser.newPage();
-        
-        // Flezen லிங்க்கை load செய்யவும் (JavaScript render ஆக காத்திருக்கவும்)
-        await page.goto(url, { waitUntil: 'networkidle2' });
-
-        // பக்கத்திலிருந்து நேரடி வீடியோ அல்லது download லிங்க்கைக் கண்டறியவும்
-        // குறிப்பு: Flezen-ன் HTML அமைப்பு மாறினால், இந்த selectors-ஐ மாற்ற வேண்டியிருக்கும்.
-        const videoData = await page.evaluate(() => {
-            // முயற்சி 1: <video> tag-ன் source
-            const videoElement = document.querySelector('video source');
-            if (videoElement) return { type: 'video', url: videoElement.src };
-            
-            // முயற்சி 2: .mp4 அல்லது download attribute கொண்ட <a> tag
-            const downloadBtn = document.querySelector('a[href*=".mp4"], a[download]');
-            if (downloadBtn) return { type: 'link', url: downloadBtn.href };
-
-            return null;
+        // முக்கிய மாற்றம்: 'localhost'க்கு பதிலாக relative path '/api/get-video' பயன்படுத்துகிறோம்
+        const response = await fetch('/api/get-video', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
         });
+        
+        const data = await response.json();
 
-        await browser.close();
-
-        if (videoData && videoData.url) {
-            res.json({ success: true, downloadUrl: videoData.url });
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <p style="color:green;">✅ Video கண்டறியப்பட்டது!</p>
+                <a href="${data.downloadUrl}" target="_blank" class="download-btn" style="display:inline-block; margin-top:15px; padding:12px 25px; background-color:#28a745; color:white; text-decoration:none; border-radius:5px;">
+                    ⬇️ Full Quality-ல் Download செய்யவும்
+                </a>
+            `;
         } else {
-            res.status(404).json({ success: false, message: "Video link-ஐக் கண்டறிய முடியவில்லை. தளத்தின் அமைப்பு மாறியிருக்கலாம்." });
+            resultDiv.innerHTML = `<p style="color:red;">❌ ${data.message}</p>`;
         }
     } catch (error) {
-        res.status(500).json({ success: false, message: "Server Error", error: error.message });
+        resultDiv.innerHTML = `<p style="color:red;">❌ பிழை: ${error.message}</p>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Download செய்க";
     }
-});
-
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Backend Server running on http://localhost:${PORT}`));
+}
