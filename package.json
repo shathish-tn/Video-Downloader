@@ -2,10 +2,9 @@
   "name": "video-downloader",
   "version": "1.0.0",
   "description": "Flezen Video Downloader",
-  "main": "server.js",
-  "type": "commonjs",
+  "main": "server.cjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.cjs"
   },
   "dependencies": {
     "express": "^4.18.2",
