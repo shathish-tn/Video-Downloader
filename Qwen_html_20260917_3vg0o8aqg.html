@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flezen Video Downloader</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        input { padding: 12px; width: 80%; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; }
+        button { padding: 12px 25px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #result { margin-top: 25px; font-weight: bold; }
+        .download-btn { display: inline-block; margin-top: 15px; padding: 12px 25px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; }
+        .download-btn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎥 Video Downloader</h2>
+        <p>கீழே உள்ள பெட்டியில் Flezen Link-ஐ Paste செய்யவும்:</p>
+        <input type="text" id="videoUrl" placeholder="https://flezen.com/s/...">
+        <br>
+        <button id="fetchBtn" onclick="fetchVideo()">Download செய்க</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function fetchVideo() {
+            const url = document.getElementById('videoUrl').value.trim();
+            const resultDiv = document.getElementById('result');
+            const btn = document.getElementById('fetchBtn');
+
+            if (!url) {
+                resultDiv.innerHTML = "<p style='color:red;'>தயவுசெய்து ஒரு valid லிங்க்கை உள்ளிடவும்.</p>";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Processing... காத்திருக்கவும்";
+            resultDiv.innerHTML = "";
+
+            try {
+                // Backend API-ஐ அழைத்தல்
+                const response = await fetch('http://localhost:3000/api/get-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p style="color:green;">✅ Video கண்டறியப்பட்டது!</p>
+                        <a href="${data.downloadUrl}" target="_blank" class="download-btn" download>
+                            ⬇️ Full Quality-ல் Download செய்யவும்
+                        </a>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p style="color:red;">❌ ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color:red;">❌ பிழை: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Download செய்க";
+            }
+        }
+    </script>
+</body>
+</html>
