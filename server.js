@@ -1,13 +1,17 @@
-const express = require('express');
-const puppeteer = require('puppeteer');
-const cors = require('cors');
-const path = require('path');
+import express from 'express';
+import puppeteer from 'puppeteer';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Frontend files serve செய்ய
+// Frontend files-ஐ serve செய்ய
 app.use(express.static(path.join(__dirname, '.')));
 
 app.post('/api/get-video', async (req, res) => {
