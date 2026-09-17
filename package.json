@@ -2,16 +2,17 @@
   "name": "video-downloader",
   "version": "1.0.0",
   "description": "Flezen Video Downloader",
-  "main": "server.cjs",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.cjs"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "puppeteer": "19.11.1",
+    "puppeteer": "^22.0.0",
     "cors": "^2.8.5"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   }
 }
